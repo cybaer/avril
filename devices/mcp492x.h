@@ -49,14 +49,14 @@ class Dac {
     Interface::Init();
   }
 
-  static inline void Write(uint8_t value) {
+  static inline void Write(uint16_t value) {
     Write(value, 0);
   }
 
-  static inline void Write(uint8_t value, uint8_t channel) {
-    value = U8Swap4(value);
+  static inline void Write(uint16_t value, uint8_t channel) {
+    //value = U8Swap4(value);
     uint8_t command;
-    command = (value & 0x0f) | 0x10;
+    command = ( 0x10 | (value >> 8));
     if (channel) {
       command |= 0x80;
     }
@@ -66,7 +66,7 @@ class Dac {
     if (gain == 1) {
       command |= 0x20;
     }
-    Interface::WriteWord(command, value & 0xf0);
+    Interface::WriteWord(command, value & 0xff);
   }
 };
 

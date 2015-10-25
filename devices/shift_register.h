@@ -150,8 +150,8 @@ struct ShiftRegisterInput<Load, Clock, Data, size, MSB_FIRST>
     T mask = 1;
     T data = 0;
     // Strobe load pin.
-    Load::Low();
-    Load::High();
+    //Load::Low();
+    //Load::High();
     for (uint8_t i = size; i > 0; --i) {
       if (Data::value()) {
         data |= mask;
