@@ -26,6 +26,9 @@
 #define NULL 0
 #endif
 
+#define boolean bool
+#define abs(x) ((x)>0?(x):-(x))
+
 typedef union {
   uint16_t value;
   uint8_t bytes[2];

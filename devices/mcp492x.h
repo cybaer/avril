@@ -60,7 +60,7 @@ class Dac {
     if (channel) {
       command |= 0x80;
     }
-    if (voltage_reference == BUFFERED) {
+    if (voltage_reference == BUFFERED_REFERENCE) {
       command |= 0x40;
     }
     if (gain == 1) {
@@ -72,4 +72,4 @@ class Dac {
 
 }  // namespace avrlib
 
-#endif   // AVRLIB_DEVICES_MCP492X_H_
+#endif  // AVRLIB_DEVICES_MCP492X_H_
