@@ -33,10 +33,9 @@ IORegister(SPSR);
 typedef BitInRegister<SPSRRegister, SPI2X> DoubleSpeed;
 typedef BitInRegister<SPSRRegister, SPIF> TransferComplete;
 
-template<typename SlaveSelect,
-         DataOrder order = MSB_FIRST,
+template<DataOrder order = MSB_FIRST,
          uint8_t speed = 4>
-class SpiMaster {
+class SpiMasterBase {
  public:
   enum {
     buffer_size = 0,
@@ -49,8 +48,6 @@ class SpiMaster {
     SpiMISO::set_mode(DIGITAL_INPUT);
     SpiSS::set_mode(DIGITAL_OUTPUT);  // I'm a master!
     SpiSS::High();
-    SlaveSelect::set_mode(DIGITAL_OUTPUT);
-    SlaveSelect::High();
 
     // SPI enabled, configured as master.
     uint8_t configuration = _BV(SPE) | _BV(MSTR);
@@ -85,6 +82,51 @@ class SpiMaster {
     SpiMISO::High();
   }
   
+  static inline void Send(uint8_t v) {
+    Overwrite(v);
+    Wait();
+  }
+
+  static inline uint8_t Receive() {
+    Send(0xff);
+    return ImmediateRead();
+  }
+
+  static inline uint8_t ImmediateRead() {
+    return SPDR;
+  }
+
+  static inline void Wait() {
+    while (!TransferComplete::value());
+  }
+
+  static inline void OptimisticWait() {
+    Wait();
+  }
+
+  static inline void Overwrite(uint8_t v) {
+    SPDR = v;
+  }
+
+};
+
+
+template<typename SlaveSelect,
+         DataOrder order = MSB_FIRST,
+         uint8_t speed = 4>
+class SpiMaster {
+ public:
+  enum {
+    buffer_size = 0,
+    data_size = 8
+  };
+typedef SpiMasterBase<order, speed> SpiBase;
+  static void Init() {
+    SpiBase::Init();
+    SlaveSelect::set_mode(DIGITAL_OUTPUT);
+    SlaveSelect::High();
+  }
+
   static inline void Begin() {
     SlaveSelect::Low();
   }
@@ -100,50 +142,30 @@ class SpiMaster {
 
   static inline void Write(uint8_t v) {
     Begin();
-    Send(v);
+    SpiBase::Send(v);
     End();
   }
   
   static inline uint8_t Read() {
     Begin();
-    uint8_t result = Receive();
+    uint8_t result = SpiBase::Receive();
     End();
     return result;
   }
   
-  static inline void Send(uint8_t v) {
-    Overwrite(v);
-    Wait();
-  }
   
-  static inline uint8_t Receive() {
-    Send(0xff);
-    return ImmediateRead();
-  }
-  
-  static inline uint8_t ImmediateRead() {
-    return SPDR;
-  }
-  
-  static inline void Wait() {
-    while (!TransferComplete::value());
-  }
-  
-  static inline void OptimisticWait() {
-    Wait();
-  }
-  
-  static inline void Overwrite(uint8_t v) {
-    SPDR = v;
-  }
 
   static inline void WriteWord(uint8_t a, uint8_t b) {
     Begin();
-    Send(a);
-    Send(b);
+    SpiBase::Send(a);
+    SpiBase::Send(b);
     End();
   }
 };
+
+
+
+
 
 template<DataOrder order = MSB_FIRST,
          bool enable_interrupt = false>

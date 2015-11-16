@@ -67,7 +67,7 @@ static const uint8_t WHITE = 1;
 static const uint8_t INVERSE = 2;
 
 
-  template<uint8_t Width, uint8_t Height, typename spi_master, typename DataControl, typename Reset>
+  template<uint8_t Width, uint8_t Height, typename SpiMasterBase, typename SlaveSelect, typename DataControl, typename Reset>
   class SSD1306 : public Adafruit_GFX
   {
   public:
@@ -87,6 +87,7 @@ static const uint8_t INVERSE = 2;
     {
 
       // set pin directions
+      SlaveSelect::set_mode(DIGITAL_OUTPUT);
       DataControl::set_mode(DIGITAL_OUTPUT);
       Reset::set_mode(DIGITAL_OUTPUT);
 
@@ -180,12 +181,12 @@ static const uint8_t INVERSE = 2;
 
     static void command(uint8_t c)
     { // SPI only
-      spi_master::End();   // SS high()
+      SlaveSelect::High();   // SS high()
       DataControl::Low();  // no Data --> Low
 
-      spi_master::Begin();
+      SlaveSelect::Low();
       fastSPIwrite(c);
-      spi_master::End();
+      SlaveSelect::High();
     }
 
     static void display(void)
@@ -207,16 +208,16 @@ static const uint8_t INVERSE = 2;
       #endif
 */
       // SPI only
-      spi_master::End();
+      SlaveSelect::High();
       DataControl::High();  // Data --> High
-      spi_master::Begin();
+      SlaveSelect::Low();
 
       for (uint16_t i=0; i<(SSD1306_LCDWIDTH*SSD1306_LCDHEIGHT/(8)); i++)
       {
         fastSPIwrite(buffer[i]);
         //ssd1306_data(buffer[i]);
       }
-      spi_master::End();
+      SlaveSelect::High();
 
     }
 
@@ -228,13 +229,13 @@ static const uint8_t INVERSE = 2;
   private:
     static inline void fastSPIwrite(uint8_t d)
     {
-      spi_master::Send(d);
+      SpiMasterBase::Send(d);
     }
 
   };
 
-  template<uint8_t Width, uint8_t Height, typename spi_master, typename DataControl, typename Reset>
-  uint8_t SSD1306<Width, Height, spi_master, DataControl, Reset>::buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];
+  template<uint8_t Width, uint8_t Height, typename SpiMasterBase, typename SlaveSelect, typename DataControl, typename Reset>
+  uint8_t SSD1306<Width, Height, SpiMasterBase, SlaveSelect, DataControl, Reset>::buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];
 
 }
 
