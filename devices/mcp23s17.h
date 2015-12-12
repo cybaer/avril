@@ -90,7 +90,7 @@ namespace avrlib
       SlaveSelect::set_mode(DIGITAL_OUTPUT);
 
       SlaveSelect::Low();
-      SpiMasterBase::Send(0x40);  //0x48
+      SpiMasterBase::Send(0x40);  //0x48 für hohe Adressen mit A2 = 1
       SpiMasterBase::Send(MCP23S17_IOCON);
       SpiMasterBase::Send(0x08);  // HAEN=1 (Enable Addressing)
       SlaveSelect::High();
@@ -122,11 +122,18 @@ namespace avrlib
   class PortPin
   {
   public:
-    static void clear(){ Extender::Ports[Port].Gpio &= ~_BV(Pin); }
-    static void set(){ Extender::Ports[Port].Gpio |= _BV(Pin); }
-    static void toggle(){ Extender::Ports[Port].Gpio ^= _BV(Pin); }
-    static uint8_t value(){ return Extender::Ports[Port].Gpio & _BV(Pin) ? 0 : 1; }
-    static void set_mode(uint8_t mode)
+    static inline void clear(){ Extender::Ports[Port].Gpio &= ~_BV(Pin); }
+    static inline void set(){ Extender::Ports[Port].Gpio |= _BV(Pin); }
+    static inline void set(bool val)
+    {
+      if(val)
+        set();
+      else
+        clear();
+    }
+    static inline void toggle(){ Extender::Ports[Port].Gpio ^= _BV(Pin); }
+    static inline bool value(){ return Extender::Ports[Port].Gpio & _BV(Pin) ? true : false; }
+    static inline void set_mode(uint8_t mode)
     {
       if(mode == DIGITAL_INPUT)
       {
@@ -137,7 +144,7 @@ namespace avrlib
         Extender::Ports[Port].IoDir &= ~_BV(Pin);
       }
     }
-    static void setPullUp(){ Extender::Ports[Port].Gppu |= _BV(Pin); }
+    static inline void setPullUp(){ Extender::Ports[Port].Gppu |= _BV(Pin); }
   };
 
 
