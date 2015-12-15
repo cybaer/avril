@@ -20,7 +20,7 @@ public:
   virtual void setColor(bool) = 0;
   virtual void set(void) = 0;
   virtual void clear(void) = 0;
-  //virtual void toggle(void) = 0;
+  virtual void toggle(void) = 0;
   virtual void set(bool) = 0;
 };
 
@@ -38,7 +38,7 @@ public:
   inline void setColor(bool color) { bool val = get(); Color::set(color); set(val); }
   inline void set(void) { Pin::set(!Color::value()); }
   inline void clear(void) { Pin::set(Color::value()); }
-  //void toggle(void) { Pin::toggle(); }
+  void toggle(void) { Pin::toggle(); }
   inline void set(bool val)
   {
     if(val)
@@ -95,6 +95,11 @@ public:
     clear();
     if(index != NIL && index < MAX_COUNT)
       m_LedArray[index]->set();
+  }
+  void toggle(int8_t index)
+  {
+    if (index != NIL && index < MAX_COUNT)
+      m_LedArray[index]->toggle();
   }
 
   LED_Base* m_LedArray[MAX_COUNT];

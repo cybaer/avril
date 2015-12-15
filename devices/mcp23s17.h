@@ -76,8 +76,10 @@ namespace avrlib
 
     static inline void ReadIO(void)
     {
-      Ports[PORT_A].Gpio = Read(MCP23S17_GPIOA);
-      Ports[PORT_B].Gpio = Read(MCP23S17_GPIOB);
+      Ports[PORT_A].Gpio &= ~Ports[PORT_A].IoDir;
+      Ports[PORT_B].Gpio &= ~Ports[PORT_B].IoDir;
+      Ports[PORT_A].Gpio |= (Ports[PORT_A].IoDir & Read(MCP23S17_GPIOA));
+      Ports[PORT_B].Gpio |= (Ports[PORT_B].IoDir & Read(MCP23S17_GPIOB));
     }
     static inline void WriteIO(void)
     {
