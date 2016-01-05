@@ -61,11 +61,9 @@ static const uint8_t SSD1306_LEFT_HORIZONTAL_SCROLL = 0x27;
 static const uint8_t SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29;
 static const uint8_t SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A;
 
-
 static const uint8_t BLACK = 0;
 static const uint8_t WHITE = 1;
 static const uint8_t INVERSE = 2;
-
 
   template<uint8_t Width, uint8_t Height, typename SpiMasterBase, typename SlaveSelect, typename DataControl, typename Reset>
   class SSD1306 : public Adafruit_GFX
@@ -75,7 +73,7 @@ static const uint8_t INVERSE = 2;
     static const uint8_t SSD1306_LCDWIDTH = Width;
     static const uint8_t SSD1306_LCDHEIGHT = Height;
     static uint8_t buffer[((SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH) / 8)];
-
+    static uint8_t page;
 
     // constructor for hardware SPI - we indicate DataCommand, ChipSelect, Reset
     SSD1306(void)
@@ -83,14 +81,14 @@ static const uint8_t INVERSE = 2;
     {}
 
 
+    static void resetPage(void) { page = 0; };
     static void init(void)
     {
-
+      page = 0;
       // set pin directions
       SlaveSelect::set_mode(DIGITAL_OUTPUT);
       DataControl::set_mode(DIGITAL_OUTPUT);
       Reset::set_mode(DIGITAL_OUTPUT);
-
 
       /*if (reset) {*/
         // Setup reset pin direction (used by both SPI and I2C
@@ -104,8 +102,6 @@ static const uint8_t INVERSE = 2;
         // bring out of reset
         Reset::High();
         // turn on VCC (9V?)
-
-
 
         // Init sequence for 128x64 OLED module
         command(SSD1306_DISPLAYOFF);                    // 0xAE
@@ -122,7 +118,7 @@ static const uint8_t INVERSE = 2;
         else*/
           { command(0x14); }
         command(SSD1306_MEMORYMODE);                    // 0x20
-        command(0x00);                                  // 0x0 act like ks0108
+        command(0x02);                                  // 0x00 Horizontal addressing mode; 0x02 Page addressing mode;
         command(SSD1306_SEGREMAP | 0x1);
         command(SSD1306_COMSCANDEC);
         command(SSD1306_SETCOMPINS);                    // 0xDA
@@ -221,6 +217,39 @@ static const uint8_t INVERSE = 2;
 
     }
 
+    static void updatePageByPage(void)
+    {
+      static const uint8_t Pages = 8;
+      static const uint8_t BytesPerPage = (SSD1306_LCDWIDTH*SSD1306_LCDHEIGHT/8) / Pages;
+
+      command(SSD1306_COLUMNADDR);
+      command(0);   // Column start address (0 = reset)
+      command(SSD1306_LCDWIDTH-1); // Column end address (127 = reset)
+
+      command(SSD1306_PAGEADDR);
+      //page = 0;
+      command(page); // Page start address (0 = reset)
+      //command(page + 5); // Page end address
+
+      // SPI only
+      SlaveSelect::High();
+      DataControl::High();  // Data --> High
+      SlaveSelect::Low();
+
+      uint16_t pageEnd = (page+1u)* BytesPerPage;
+      for (uint16_t i=page * BytesPerPage; i < pageEnd; i++)
+      {
+        fastSPIwrite(buffer[i]);
+        //ssd1306_data(buffer[i]);
+      }
+      SlaveSelect::High();
+
+      if(++page >= Pages)
+      {
+        page = 0;
+      }
+    }
+
     void clear(void)
     {
       memset(buffer, 0, (SSD1306_LCDWIDTH*SSD1306_LCDHEIGHT/8));
@@ -231,13 +260,13 @@ static const uint8_t INVERSE = 2;
     {
       SpiMasterBase::Send(d);
     }
-
   };
 
   template<uint8_t Width, uint8_t Height, typename SpiMasterBase, typename SlaveSelect, typename DataControl, typename Reset>
   uint8_t SSD1306<Width, Height, SpiMasterBase, SlaveSelect, DataControl, Reset>::buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];
 
+  template<uint8_t Width, uint8_t Height, typename SpiMasterBase, typename SlaveSelect, typename DataControl, typename Reset>
+  uint8_t SSD1306<Width, Height, SpiMasterBase, SlaveSelect, DataControl, Reset>::page;
 }
-
 #endif
 
