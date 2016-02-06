@@ -12,8 +12,9 @@
 # GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
 
-AVRLIB_TOOLS_PATH ?= /usr/local/CrossPack-AVR/bin/
+AVRLIB_TOOLS_PATH ?= /usr/bin/
 BUILD_ROOT     = build/
 BUILD_DIR      = $(BUILD_ROOT)$(TARGET)/
 PROGRAMMER     ?= avrispmkII
@@ -43,13 +44,15 @@ endif
 endif
 endif
 
+# verschieben ins Projekt-Makefile
 F_CPU          ?= 20000000
 
 VPATH          = $(PACKAGES)
 CC_FILES       = $(notdir $(wildcard $(patsubst %,%/*.cc,$(PACKAGES))))
+CPP_FILES      = $(notdir $(wildcard $(patsubst %,%/*.cpp,$(PACKAGES))))
 C_FILES        = $(notdir $(wildcard $(patsubst %,%/*.c,$(PACKAGES))))
 AS_FILES       = $(notdir $(wildcard $(patsubst %,%/*.s,$(PACKAGES))))
-OBJ_FILES      = $(CC_FILES:.cc=.o) $(C_FILES:.c=.o) $(AS_FILES:.s=.o)
+OBJ_FILES      = $(CC_FILES:.cc=.o) $(CPP_FILES:.cpp=.o) $(C_FILES:.c=.o) $(AS_FILES:.s=.o)
 OBJS           = $(patsubst %,$(BUILD_DIR)%,$(OBJ_FILES))
 DEPS           = $(OBJS:.o=.d)
 
@@ -60,6 +63,7 @@ TARGETS        = $(BUILD_DIR)$(TARGET).*
 DEP_FILE       = $(BUILD_DIR)depends.mk
 
 CC             = $(AVRLIB_TOOLS_PATH)avr-gcc
+CPP            = $(AVRLIB_TOOLS_PATH)avr-gcc
 CXX            = $(AVRLIB_TOOLS_PATH)avr-g++
 OBJCOPY        = $(AVRLIB_TOOLS_PATH)avr-objcopy
 OBJDUMP        = $(AVRLIB_TOOLS_PATH)avr-objdump
@@ -70,7 +74,7 @@ AVRDUDE        = $(AVRLIB_TOOLS_PATH)avrdude
 REMOVE         = rm -f
 CAT            = cat
 
-CPPFLAGS      = -mmcu=$(MCU) -I. \
+CPPFLAGS      = -mmcu=$(MCU) $(INC_PARAMS) -I. \
 			-g -Os -w -Wall \
 			-DF_CPU=$(F_CPU) \
 			-D__PROG_TYPES_COMPAT__ \
@@ -94,6 +98,9 @@ LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--gc-sections$(EXTRA_LD_FLAGS)
 $(BUILD_DIR)%.o: %.cc
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
+$(BUILD_DIR)%.o: %.cpp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
 $(BUILD_DIR)%.o: %.c
 	$(CC) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
@@ -101,6 +108,9 @@ $(BUILD_DIR)%.o: %.s
 	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $< -o $@
 
 $(BUILD_DIR)%.d: %.cc
+	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS) $< -MF $@ -MT $(@:.d=.o)
+
+$(BUILD_DIR)%.d: %.cpp
 	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS) $< -MF $@ -MT $(@:.d=.o)
 
 $(BUILD_DIR)%.d: %.c
@@ -187,10 +197,10 @@ $(BUILD_DIR)$(TARGET).top_symbols: $(TARGET_ELF)
 		$(NM) $(TARGET_ELF) --size-sort -C -f bsd -r > $@
 
 size: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$1+$$2 }' | tail -n1 | figlet | cowsay -n -f moose
+		cat $(TARGET).size | awk '{ print $$1+$$2 }' | tail -n1 #| figlet | cowsay -n -f moose
 
 ramsize: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$2+$$3 }' | tail -n1 | figlet | cowsay -n -f small
+		cat $(TARGET).size | awk '{ print $$2+$$3 }' | tail -n1 #| figlet | cowsay -n -f small
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
 
