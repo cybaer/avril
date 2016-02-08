@@ -45,7 +45,7 @@ endif
 endif
 
 # verschieben ins Projekt-Makefile
-F_CPU          ?= 20000000
+F_CPU          ?= 16000000
 
 VPATH          = $(PACKAGES)
 CC_FILES       = $(notdir $(wildcard $(patsubst %,%/*.cc,$(PACKAGES))))
@@ -144,7 +144,7 @@ $(BUILD_DIR)%.sym: $(BUILD_DIR)%.elf
 # AVRDude
 # ------------------------------------------------------------------------------
 
-AVRDUDE_COM_OPTS = -V -p $(DMCU)
+AVRDUDE_COM_OPTS = -p $(DMCU)
 AVRDUDE_ISP_OPTS = -c $(PROGRAMMER) -P $(PROGRAMMER_PORT)
 
 ifeq ($(AVRDUDE_LOCK),no)
@@ -178,11 +178,13 @@ bin:	$(TARGET_BIN)
 
 upload:    $(TARGET_HEX)
 		$(AVRDUDE) $(AVRDUDE_ERASE_OPTS) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
-			-B 1 -U flash:w:$(TARGET_HEX):i $(AVRDUDE_LOCK_OPTS) 
+			-B 1 -U flash:w:$(TARGET_HEX):a 
+#$(AVRDUDE_LOCK_OPTS) 
 
 slow_upload:    $(TARGET_HEX)
 		$(AVRDUDE) $(AVRDUDE_ERASE_OPTS) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
-			-B 4 -U flash:w:$(TARGET_HEX):i $(AVRDUDE_LOCK_OPTS)
+			-B 4 -U flash:w:$(TARGET_HEX):i 
+#$(AVRDUDE_LOCK_OPTS)
 
 clean:
 		$(REMOVE) $(OBJS) $(TARGETS) $(DEP_FILE) $(DEPS)
@@ -314,3 +316,4 @@ bake:	$(FIRMWARE)
 			-U lock:w:0x$(LOCK):m
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \
 			-U flash:w:$(TARGET_HEX):i -U lock:w:0x$(LOCK):m
+
