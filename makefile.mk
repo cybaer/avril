@@ -20,7 +20,7 @@ BUILD_DIR      = $(BUILD_ROOT)$(TARGET)/
 PROGRAMMER     ?= avrispmkII
 PROGRAMMER_PORT ?= usb
 AVRDUDE_ERASE  ?= no
-AVRDUDE_LOCK   ?= yes
+AVRDUDE_LOCK   ?= no
 
 ifeq ($(FAMILY),tiny)
 MCU            = attiny$(MCU_NAME)
