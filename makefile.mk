@@ -178,13 +178,11 @@ bin:	$(TARGET_BIN)
 
 upload:    $(TARGET_HEX)
 		$(AVRDUDE) $(AVRDUDE_ERASE_OPTS) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
-			-B 1 -U flash:w:$(TARGET_HEX):a 
-#$(AVRDUDE_LOCK_OPTS) 
+			-B 1 -U flash:w:$(TARGET_HEX):a $(AVRDUDE_LOCK_OPTS) 
 
 slow_upload:    $(TARGET_HEX)
 		$(AVRDUDE) $(AVRDUDE_ERASE_OPTS) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
-			-B 4 -U flash:w:$(TARGET_HEX):i 
-#$(AVRDUDE_LOCK_OPTS)
+			-B 4 -U flash:w:$(TARGET_HEX):a $(AVRDUDE_LOCK_OPTS)
 
 clean:
 		$(REMOVE) $(OBJS) $(TARGETS) $(DEP_FILE) $(DEPS)
