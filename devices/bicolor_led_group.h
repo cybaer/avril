@@ -96,6 +96,13 @@ public:
     if(index != NIL && index < MAX_COUNT)
       m_LedArray[index]->set();
   }
+  void setWithMask(uint8_t mask)
+  {
+    for (int8_t i=0; i < MAX_COUNT; i++)
+    {
+      m_LedArray[i]->set(mask & 1<<i);
+    }
+  }
   void toggle(int8_t index)
   {
     if (index != NIL && index < MAX_COUNT)
