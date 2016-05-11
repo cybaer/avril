@@ -111,6 +111,7 @@ public:
 
   LED_Base* m_LedArray[MAX_COUNT];
 
+
 private:
   DISALLOW_COPY_AND_ASSIGN(LEDGroupBase);
 };

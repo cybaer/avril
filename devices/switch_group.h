@@ -19,7 +19,7 @@ public:
   : m_State(0xff)
   {}
   virtual void init(void) = 0;
-  virtual uint8_t refresh(void) = 0;
+  virtual bool refresh(void) = 0;
   bool released() { return m_State == 0x80; }
   bool pressed()  { return m_State == 0x7f; }
   bool active()   { return m_State == 0xff; }
@@ -44,10 +44,10 @@ public:
     if(PullUp)
       Pin::setPullUp();
   }
-  uint8_t refresh()
+  bool refresh()
   {
     m_State = (m_State << 1) | (Pin::value() ? !PullUp : PullUp);
-    return m_State;
+    return active();
   }
 
 private:
@@ -67,12 +67,16 @@ public:
       m_SwArray[i]->init();
     }
   }
-  void refresh(void)
+  uint8_t refresh(void)
   {
+    uint8_t ret = 0;
+
     for(int8_t i=0; i<MAX_COUNT; i++)
     {
-      m_SwArray[i]->refresh();
+      ret <<= 1;
+      ret |= m_SwArray[i]->refresh();
     }
+    return ret;
   }
   bool isActive(int8_t& index)
   {
