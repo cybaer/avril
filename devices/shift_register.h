@@ -101,6 +101,14 @@ struct ShiftRegisterOutput<Latch, Clock, Data, size, MSB_FIRST>
     ShiftOut(data);
     End();
   }
+  static void WriteWord(uint8_t a, uint8_t b) {
+    uint16_t data = a;
+    data <<= 8;
+    data |= b;
+    Begin();
+    ShiftOut(data);
+    End();
+   }
 };
 
 template<typename Load, typename Clock, typename Data>

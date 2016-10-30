@@ -70,8 +70,8 @@ public:
   uint8_t refresh(void)
   {
     uint8_t ret = 0;
-
-    for(int8_t i=0; i<MAX_COUNT; i++)
+    // Schleife rückwärts, für korrekte Reihenfolge im Rückgabewert
+    for(int8_t i=MAX_COUNT-1; i>=0; i--)
     {
       ret <<= 1;
       ret |= m_SwArray[i]->refresh();

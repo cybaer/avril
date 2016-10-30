@@ -27,7 +27,8 @@ using namespace avrlib;
 
 namespace avrlib {
 
-static const uint8_t kDacSpeed = 2;
+static const bool LowGain = false;
+static const bool HighGain = true;
 
 enum DacVoltageReference {
   BUFFERED_REFERENCE,
@@ -35,26 +36,27 @@ enum DacVoltageReference {
 };
 
 template<typename Interface,
-         DacVoltageReference voltage_reference = UNBUFFERED_REFERENCE,
-         uint8_t gain = 1>
+         DacVoltageReference voltage_reference = UNBUFFERED_REFERENCE>
 class Dac {
  public:
-  enum {
+  /*enum {
     buffer_size = 0,
     data_size = 8,
-  };
+  };*/
   Dac() { }
 
   static void Init() {
     Interface::Init();
   }
+  static inline void setHighGain(bool high) { m_HighGain = high; }
 
   static inline void Write(uint16_t value) {
     Write(value, 0);
   }
 
-  static inline void Write(uint16_t value, uint8_t channel) {
+  static inline void Write(uint16_t value, uint8_t channel, bool highGain = false) {
     //value = U8Swap4(value);
+
     uint8_t command;
     command = ( 0x10 | (value >> 8));
     if (channel) {
@@ -63,12 +65,17 @@ class Dac {
     if (voltage_reference == BUFFERED_REFERENCE) {
       command |= 0x40;
     }
-    if (gain == 1) {
+    if (!highGain) {
       command |= 0x20;
     }
     Interface::WriteWord(command, value & 0xff);
   }
+ private:
+  static bool m_HighGain;
 };
+
+template<typename Interface, DacVoltageReference voltage_reference>
+bool Dac<Interface, voltage_reference>::m_HighGain;
 
 }  // namespace avrlib
 
