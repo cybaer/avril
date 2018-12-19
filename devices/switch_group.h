@@ -57,32 +57,34 @@ private:
 class SwitchGroupBase
 {
 public:
-  SwitchGroupBase() {};
+  SwitchGroupBase(SwitchBase** switches, int8_t count)
+  : m_Switches(switches)
+  , m_SwCount(count)
+  {};
 
-  static const int8_t MAX_COUNT = 4;
   void init(void)
   {
-    for(int8_t i=0; i<MAX_COUNT; i++)
+    for(int8_t i=0; i<m_SwCount; i++)
     {
-      m_SwArray[i]->init();
+      m_Switches[i]->init();
     }
   }
   uint8_t refresh(void)
   {
     uint8_t ret = 0;
     // Schleife rückwärts, für korrekte Reihenfolge im Rückgabewert
-    for(int8_t i=MAX_COUNT-1; i>=0; i--)
+    for(int8_t i=m_SwCount-1; i>=0; i--)
     {
       ret <<= 1;
-      ret |= m_SwArray[i]->refresh();
+      ret |= m_Switches[i]->refresh();
     }
     return ret;
   }
   bool isActive(int8_t& index)
   {
-    for (int8_t i = 0; i < MAX_COUNT; i++)
+    for (int8_t i = 0; i < m_SwCount; i++)
     {
-      if (m_SwArray[i]->active())
+      if (m_Switches[i]->active())
       {
         index = i;
         return true;
@@ -92,9 +94,9 @@ public:
   }
   bool getPressed(int8_t& index)
   {
-    for(int8_t i=0; i<MAX_COUNT; i++)
+    for(int8_t i=0; i<m_SwCount; i++)
     {
-      if(m_SwArray[i]->pressed())
+      if(m_Switches[i]->pressed())
       {
         index = i;
         return true;
@@ -102,7 +104,8 @@ public:
     }
     return false;
   }
-  SwitchBase* m_SwArray[MAX_COUNT];
+  SwitchBase** m_Switches;
+  int8_t m_SwCount;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(SwitchGroupBase);
@@ -112,18 +115,20 @@ template <typename S1, typename S2, typename S3, typename S4>
 class SwitchGroup : public SwitchGroupBase
 {
 public:
-
+  static const int8_t SWITCH_COUNT = 4;
   static S1 sw1;
   static S2 sw2;
   static S3 sw3;
   static S4 sw4;
   SwitchGroup()
+  : SwitchGroupBase(m_SwArray, SWITCH_COUNT)
     {
       m_SwArray[0] = &sw1;
       m_SwArray[1] = &sw2;
       m_SwArray[2] = &sw3;
       m_SwArray[3] = &sw4;
     }
+  static SwitchBase* m_SwArray[SWITCH_COUNT];
 };
 template <typename S1, typename S2, typename S3, typename S4>
 S1 SwitchGroup<S1, S2, S3, S4>::sw1;
@@ -134,8 +139,44 @@ S3 SwitchGroup<S1, S2, S3, S4>::sw3;
 template <typename S1, typename S2, typename S3, typename S4>
 S4 SwitchGroup<S1, S2, S3, S4>::sw4;
 
-/*template <typename S1, typename S2, typename S3, typename S4>
-SwitchBase* SwitchGroup<S1, S2, S3, S4>::m_SwArray[];*/
+template <typename S1, typename S2, typename S3, typename S4>
+SwitchBase* SwitchGroup<S1, S2, S3, S4>::m_SwArray[4];
+
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+class SwitchGroup5 : public SwitchGroupBase
+{
+public:
+  static const int8_t SWITCH_COUNT = 5;
+  static S1 sw1;
+  static S2 sw2;
+  static S3 sw3;
+  static S4 sw4;
+  static S5 sw5;
+  SwitchGroup5()
+  : SwitchGroupBase(m_SwArray, SWITCH_COUNT)
+    {
+      m_SwArray[0] = &sw1;
+      m_SwArray[1] = &sw2;
+      m_SwArray[2] = &sw3;
+      m_SwArray[3] = &sw4;
+      m_SwArray[4] = &sw5;
+    }
+  static SwitchBase* m_SwArray[SWITCH_COUNT];
+};
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+S1 SwitchGroup5<S1, S2, S3, S4, S5>::sw1;
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+S2 SwitchGroup5<S1, S2, S3, S4, S5>::sw2;
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+S3 SwitchGroup5<S1, S2, S3, S4, S5>::sw3;
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+S4 SwitchGroup5<S1, S2, S3, S4, S5>::sw4;
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+S5 SwitchGroup5<S1, S2, S3, S4, S5>::sw5;
+
+
+template <typename S1, typename S2, typename S3, typename S4, typename S5>
+SwitchBase* SwitchGroup5<S1, S2, S3, S4, S5>::m_SwArray[5];
 
 
 #endif /* AVRLIB_DEVICES_SWITCH_GROUP_H_ */
