@@ -204,6 +204,7 @@ template<typename Gpio>
 struct Inverter {
   static void High() { Gpio::Low(); }
   static void Low() { Gpio::High(); }
+  static void Toggle() { Gpio::Toggle();}
   static void set_mode(uint8_t mode) { Gpio::set_mode(mode); }
   static void set_value(uint8_t value) { Gpio::set_value(!value); }
   static void set_pwm_value(uint8_t value) { Gpio::set_pwm_value(~value); }
