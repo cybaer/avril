@@ -71,7 +71,7 @@ public:
   }
   uint8_t refresh(void)
   {
-    uint8_t ret = 0;
+    static uint8_t ret = 0;
     // Schleife rückwärts, für korrekte Reihenfolge im Rückgabewert
     for(int8_t i=m_SwCount-1; i>=0; i--)
     {
