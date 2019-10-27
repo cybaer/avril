@@ -18,14 +18,14 @@
 #ifndef MCP23S08_H_
 #define MCP23S08_H_
 
+#include "avrlib/time.h"
+
+
 #include "avrlib/spi.h"
 #include "avrlib/gpio.h"
 
 namespace avrlib
 {
-  static const uint8_t PORT_A = 0;
-  static const uint8_t PORT_B = 1;
-
   static const uint8_t MCP23S08_WRITE = 0x00;
   static const uint8_t MCP23S08_READ = 0x01;
 
@@ -69,6 +69,7 @@ namespace avrlib
       SlaveSelect::Low();
       SpiMasterBase::Send(slaveAddress | MCP23S08_READ);
       SpiMasterBase::Send(address);
+      _delay_us(50);
       uint8_t data = SpiMasterBase::Receive();
       SlaveSelect::High();
       return data;
@@ -88,19 +89,20 @@ namespace avrlib
     static inline void Init(void)
     {
       SlaveSelect::set_mode(DIGITAL_OUTPUT);
-
-      SlaveSelect::Low();
-      //SpiMasterBase::Send(0x40);  //0x48 für hohe Adressen mit A2 = 1
-      SpiMasterBase::Send(MCP23S08_IOCON);
-      //SpiMasterBase::Send(0x08);  // HAEN=1 (Enable Addressing)
       SlaveSelect::High();
+      _delay_us(50);
+//      SlaveSelect::Low();
+//      SpiMasterBase::Send(0x40);  //0x48 für hohe Adressen mit A2 = 1
+//      SpiMasterBase::Send(MCP23S08_IOCON);
+//      SpiMasterBase::Send(0x00);  // HAEN=0 (Enable Addressing)
+//      SlaveSelect::High();
 
       Write(MCP23S08_IODIR, Ports.IoDir);
-
+      _delay_us(50); // for better CS signal
       Write(MCP23S08_GPPU, Ports.Gppu);
     }
 
-    static Registers Ports;
+    static volatile Registers Ports;
 
   private:
     static const uint8_t slaveAddress = 0x40 | (addr << 1);
@@ -109,7 +111,7 @@ namespace avrlib
 
   // funktioniert, aber warum?
   template<typename SpiMasterBase, typename SlaveSelect, uint8_t addr>
-  Registers MCP23S08<SpiMasterBase, SlaveSelect, addr>::Ports;
+  volatile Registers MCP23S08<SpiMasterBase, SlaveSelect, addr>::Ports;
 
   template<typename Extender, uint8_t Pin>
   class PortPin
