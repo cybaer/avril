@@ -26,6 +26,34 @@
 
 namespace avrlib {
 
+template<typename Clock, typename Data>
+struct SoftSPI {
+  SoftSPI() { }
+  static void Init()
+  {
+    Clock::set_mode(DIGITAL_OUTPUT);
+    Data::set_mode(DIGITAL_OUTPUT);
+  }
+  static inline void Send(uint8_t data)
+  {
+    Data::Low();
+    uint8_t mask = 0x80;
+    for (uint8_t i=8; i>0; --i)
+    {
+      Clock::Low();
+      Data::set_value(data & mask);
+      mask >>= 1;
+      Clock::High();
+    }
+    Clock::Low();
+  }
+  static inline uint8_t Receive()
+  {
+    Send(0xff);
+    return 0;
+  }
+};
+
 template<typename Latch, typename Clock, typename Data>
 struct BaseShiftRegisterOutput {
   BaseShiftRegisterOutput() { }
